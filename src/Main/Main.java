@@ -1,6 +1,5 @@
 package Main;
 
-import java.awt.image.RescaleOp;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -38,34 +37,25 @@ public class Main {
 
 		// 这里迭代每次产生新的频繁项集，还有一个问题，新的itemSet size为0时，循环结束，最终的结果保存在 itemSetPre 中。
 		for (int k = 2; itemSet.size() != 0; k++) {
-			// 先将这次的保存起来。
-			itemSetPre = itemSet;
 
+			itemSetPre = itemSet;
 			// 这个操作的结果是每次都产生了C，做了两件事情，连接和剪枝.
 			HashSet<HashSet<String>> c = aproiriGen(itemSet);
-
-			// 这里需要统计下，将小于最小支持度的删除掉。
 
 			// 这个操作是产生了最终的新一代 L.
 			itemSet = itemSetGen(data, c);
 
 		}
-
-		// 循环结束的时候，结果就存放在 itemSetPre 中，键是频繁项，值是数目
-		
-		
-		System.out.println("最终的结果是***********************************************************");
+		System.out.println("最终的结果是*****************************");
 		printHashMap(itemSetPre);
 
 	}
 
 	/**
 	 * 由原始数据data 和 集合C产生了新的项集。HashMap<HashSet<String>, Integer> 统计数据。
-	 * 对于项集中的每一项，遍历没数据，与每一条做对比。
-	 * 
-	 * 拿出C的一条数据 ，是个 HashSet<String> 的结构。将其转换成List<String> 和data 中的数据逐条比较。data
-	 * 中的一条数据是 个 List<String>. 求两个的交集，若等于C中的项，则该项+1。
-	 * 
+	 * 对于项集中的每一项，遍历数据，与每一条数据做对比。 拿出C的一条项 ，是个 HashSet<String>
+	 * 的结构。将其转换成List<String> 和data 中的数据逐条比较。data 中的一条数据是 个 List<String>.
+	 * 求两个的交集，若等于C中的项，则该项+1。 
 	 * @param data
 	 *            原始的数据。
 	 * @param c
@@ -75,14 +65,9 @@ public class Main {
 	private static HashMap<HashSet<String>, Integer> itemSetGen(
 			ArrayList<List<String>> data, HashSet<HashSet<String>> c) {
 
-		System.out
-				.println("这里是测试开始----------------------------------------------------");
-		System.out.println("本次的c是：" + c);
-		System.out.println("本次的data是：" + data);
-
 		HashMap<HashSet<String>, Integer> result = new HashMap<HashSet<String>, Integer>();
 
-		for (HashSet<String> item : c) { // 拿出了其中的一项。
+		for (HashSet<String> item : c) {
 
 			// List构造方法可以直接将set转换成list，将这一项转换成了list。
 			ArrayList<String> list = new ArrayList<String>(item);
