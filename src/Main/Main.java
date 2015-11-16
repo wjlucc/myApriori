@@ -22,7 +22,7 @@ public class Main {
 	public static void main(String[] args) {
 		// 这里用来存放原始数据，每一项是一条事务。每一条事务又包含有一组值。
 		ArrayList<List<String>> data = new ArrayList<List<String>>();
-		String path = "datatest.txt";
+		String path = "data.txt";
 		// 读入原始数据
 		try {
 			readData(data, path);
@@ -50,13 +50,13 @@ public class Main {
 
 		}
 
-		associationRulesGen(data, itemSet);
+	
 
 		System.out.println("最终产生的频繁项集是*********************");
 		printHashMap(itemSetPre);
 
-		System.out.println("最终产生的频繁项集是*********************");
-		associationRulesGen(data, itemSet);
+		System.out.println("最终产生的关联规则是*********************");
+		associationRulesGen(data, itemSetPre);
 
 	}
 
@@ -70,7 +70,7 @@ public class Main {
 	 */
 	private static void associationRulesGen(ArrayList<List<String>> data,
 			HashMap<HashSet<String>, Integer> itemSet) {
-
+	
 		// 将频繁项集 中的频繁项提取出来，生成一个集合
 		// HashSet<HashSet<String>>，如：{{1,2,3}，{1,2,5}}遍历这个集合中的每一项,对于其中的每一项频繁项，做如下操作.
 
@@ -86,26 +86,30 @@ public class Main {
 		 */
 		// 每一条频繁项循环一次会产生这样一个Map
 		// 结构是HashMap<HashMap<HashSet<String>,HashSet<String>>,Double>
+		
+		
 
 		Set<HashSet<String>> freqItem = itemSet.keySet();
+	
+	
 		HashMap<HashMap<HashSet<String>, HashSet<String>>, Double> result = new HashMap<HashMap<HashSet<String>, HashSet<String>>, Double>();
 
 		for (HashSet<String> aFreqItem : freqItem) {
-			double confid = itemSet.get(aFreqItem);
-
+			double confidence = itemSet.get(aFreqItem);
+			
 			// 得到了每一条频繁项的非空子集，用来遍历计算。
 			HashSet<HashSet<String>> freqItemSubset = new HashSet<HashSet<String>>();
-			getSubset(aFreqItem,freqItemSubset);	
-			
-			
-			
-			
+			getSubset(aFreqItem, freqItemSubset);
+
 			for (HashSet<String> aFreqItemSubset : freqItemSubset) {
 				// 这里得到的是每一个子集在数据中出现的次数。
 				int num = numOfSubset(data, aFreqItemSubset);
-				confid /= (num * 1.0);
+//				System.out.println(aFreqItemSubset+"----------"+num);
+				double confid = confidence /num;
+//				System.out.println("confidence:"+confid);
 
 				if (confid > min_confid) {
+
 					// 产生了补集
 					HashSet<String> subsetCompl = getComplement(aFreqItem,
 							aFreqItemSubset);
@@ -113,55 +117,115 @@ public class Main {
 					assRule.put(aFreqItemSubset, subsetCompl);
 					result.put(assRule, confid);
 				}
-
 			}
 
+			
 		}
 		printAssRules(result);
 
 	}
 
 	/**
-	 * 得到每一条频繁项的非空子集.
-	 * 循环策略：判断当前元素数目，当期为1时，停止递归
-	 * 每次找到其少于一个的子集，如{1,2,3}先找到子集{{1,2}，{2,3}，{1,3}}，对于这样的每一个子集，再查找其少于一个的子集。
+	 * 打印出这个结构就OK
 	 * 
-	 * @param item 对应的频繁项，如{1,2,3}
-	 * @return 其子集结构，如{{1,2}，{1,5}，{2}。。。。。}
+	 * @param result
 	 */
-	private static HashSet<HashSet<String>> getNoviSubset(
-			HashSet<String> item) {
-		//result 用来存放最终的子集。
-		HashSet<HashSet<String>> result = new HashSet<HashSet<String>>();
-		getSubset(item,result);		
+	private static void printAssRules(
+			HashMap<HashMap<HashSet<String>, HashSet<String>>, Double> result) {
+		
+		for(Map.Entry<HashMap<HashSet<String>, HashSet<String>>, Double> me :result.entrySet()){			
+			
+			HashMap<HashSet<String>, HashSet<String>> key = me.getKey();
+			for(Map.Entry<HashSet<String>, HashSet<String>> me2:key.entrySet()){
+				
+				System.out.print(me2.getKey()+"==>"+me2.getValue());
+				System.out.println(", confidence:"+me.getValue());
+			}
+
+			
+		}
+		
+	}
+
+	/**
+	 * 产生子集对应的补集
+	 * 
+	 * @param item
+	 *            全集
+	 * @param itemSubset
+	 *            子集
+	 * @return
+	 */
+	private static HashSet<String> getComplement(HashSet<String> item,
+			HashSet<String> itemSubset) {
+		HashSet<String> result = new HashSet<String>();
+		result.addAll(item);
+
+		for (String str : itemSubset) {
+			result.remove(str);
+		}
+
 		return result;
 	}
 
+	/**
+	 * 得到的是每一个子集在数据中出现的次数
+	 * 
+	 * @param data
+	 *            原始的数据
+	 * @param item
+	 *            其中的一项。
+	 * @return
+	 */
+	private static int numOfSubset(ArrayList<List<String>> data,
+			HashSet<String> item) {
+		int num = 0;
+		// List构造方法可以直接将set转换成list，将这一项转换成了list。
+		ArrayList<String> list = new ArrayList<String>(item);
+		for (List<String> itemData : data) {
+			ArrayList<String> tempList = new ArrayList<String>();
+			tempList.addAll(list);
+			boolean flag = !tempList.retainAll(itemData);
 
+			if (flag) {// 判断项 与数据的关系，如果项是数据的子集
+				num++;
+			}
+		}
+		return num;
+	}
 
+	/**
+	 * 得到每一条频繁项的非空子集. 循环策略：判断当前元素数目，当期为1时，停止递归
+	 * 每次找到其少于一个的子集，如{1,2,3}先找到子集{{1,2}，{2,3}，{1,3}}，对于这样的每一个子集，再查找其少于一个的子集。
+	 * 
+	 * @param item
+	 *            对应的频繁项，如{1,2,3}
+	 * @param result
+	 *            存放其子集结构，如{{1,2}，{1,5}，{2}。。。。。}
+	 */
 	private static void getSubset(HashSet<String> item,
 			HashSet<HashSet<String>> result) {
-		
-		//结束条件
-		if(item.size() <= 1){
-			return ;
+
+		// 结束条件
+		if (item.size() <= 1) {
+			return;
 		}
 		HashSet<HashSet<String>> subset = getSubset1(item);
 		result.addAll(subset);
-		for(HashSet<String> aSubs:subset){
-			getSubset(aSubs,result);
-		}		
+		for (HashSet<String> aSubs : subset) {
+			getSubset(aSubs, result);
+		}
 	}
 
-	//得到某个项的元素少于 1 的子集。
+	// 得到某个项的元素少于 1 的子集。
 	private static HashSet<HashSet<String>> getSubset1(HashSet<String> item) {
 		HashSet<HashSet<String>> result = new HashSet<HashSet<String>>();
-		for(String aItem:item){
+		for (String aItem : item) {
 			HashSet<String> tempItem = new HashSet<String>();
 			tempItem.addAll(item);
 			tempItem.remove(aItem);
 			result.add(tempItem);
-		}		
+		}
 		return result;
 	}
 
@@ -250,7 +314,7 @@ public class Main {
 				HashSet<String> subset = new HashSet<String>();
 				subset.addAll(item);
 				subset.remove(s);
-				
+
 				if (!keySet.contains(subset)) {
 					flag = true;
 				}
