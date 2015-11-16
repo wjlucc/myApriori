@@ -49,6 +49,28 @@ public class Main {
 		
 		System.out.println("---------------------------");
 		print(s);
+		
+		
+		
+		
+		
+		
+		System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+		HashSet<HashSet<String>> hashSet = new HashSet<HashSet<String>>();
+		HashSet<String> item = new HashSet<String>();
+		item.add("a");
+		item.add("b");
+		item.add("c");
+//		item.add("d");
+		hashSet=getSubset1(item);
+		System.out.println(hashSet);
+		
+		
+		System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+		
+		HashSet<HashSet<String>> result = new HashSet<HashSet<String>>();
+		getSubset(item,result);
+		System.out.println(result);
 	}
 
 	/**
@@ -63,4 +85,27 @@ public class Main {
 		}
 	}
 
+	private static void getSubset(HashSet<String> item,
+			HashSet<HashSet<String>> result) {
+		
+		//½áÊøÌõ¼ş
+		if(item.size() <= 1){
+			return ;
+		}
+		HashSet<HashSet<String>> subset = getSubset1(item);
+		result.addAll(subset);
+		for(HashSet<String> aSubs:subset){
+			getSubset(aSubs,result);
+		}		
+	}
+	private static HashSet<HashSet<String>> getSubset1(HashSet<String> item) {
+		HashSet<HashSet<String>> result = new HashSet<HashSet<String>>();
+		for(String aItem:item){
+			HashSet<String> tempItem = new HashSet<String>();
+			tempItem.addAll(item);
+			tempItem.remove(aItem);
+			result.add(tempItem);
+		}		
+		return result;
+	}
 }

@@ -146,8 +146,23 @@ public class Main {
 		if(item.size() <= 1){
 			return ;
 		}
-		
-		
+		HashSet<HashSet<String>> subset = getSubset1(item);
+		result.addAll(subset);
+		for(HashSet<String> aSubs:subset){
+			getSubset(aSubs,result);
+		}		
+	}
+
+	//得到某个项的元素少于 1 的子集。
+	private static HashSet<HashSet<String>> getSubset1(HashSet<String> item) {
+		HashSet<HashSet<String>> result = new HashSet<HashSet<String>>();
+		for(String aItem:item){
+			HashSet<String> tempItem = new HashSet<String>();
+			tempItem.addAll(item);
+			tempItem.remove(aItem);
+			result.add(tempItem);
+		}		
+		return result;
 	}
 
 	/**
