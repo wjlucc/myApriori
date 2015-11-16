@@ -46,9 +46,25 @@ public class Main {
 			itemSet = itemSetGen(data, c);
 
 		}
-		System.out.println("最终的结果是*********************");
+		
+		associationRulesGen(data,itemSet);
+		
+		System.out.println("最终产生的频繁项集是*********************");
 		printHashMap(itemSetPre);
+		
+		System.out.println("最终产生的频繁项集是*********************");
+		associationRulesGen(data,itemSet);
 
+	}
+
+	/**
+	 * 根据频繁项集产生并且打印出关联规则。
+	 * 对于产生的每一条频繁项，否
+	 * @param data
+	 * @param itemSet
+	 */
+	private static void associationRulesGen(ArrayList<List<String>> data,
+			HashMap<HashSet<String>, Integer> itemSet) {
 	}
 
 	/**
