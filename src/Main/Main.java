@@ -11,10 +11,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
+
 public class Main {
 
 	// 设置的最小支持度计数为 2.
 	private static int min_sup = 2;
+	private static double min_confid = 0.7;
 
 	public static void main(String[] args) {
 		// 这里用来存放原始数据，每一项是一条事务。每一条事务又包含有一组值。
@@ -46,25 +49,105 @@ public class Main {
 			itemSet = itemSetGen(data, c);
 
 		}
-		
-		associationRulesGen(data,itemSet);
-		
+
+		associationRulesGen(data, itemSet);
+
 		System.out.println("最终产生的频繁项集是*********************");
 		printHashMap(itemSetPre);
-		
+
 		System.out.println("最终产生的频繁项集是*********************");
-		associationRulesGen(data,itemSet);
+		associationRulesGen(data, itemSet);
 
 	}
 
 	/**
-	 * 根据频繁项集产生并且打印出关联规则。
-	 * 对于产生的每一条频繁项，否
+	 * 根据频繁项集产生并且打印出关联规则。 对于产生的每一条频繁项，要找到一组关联规则。
+	 * 
 	 * @param data
+	 *            原始数据 ArrayList<List<String>> data
 	 * @param itemSet
+	 *            生成的频繁项集
 	 */
 	private static void associationRulesGen(ArrayList<List<String>> data,
 			HashMap<HashSet<String>, Integer> itemSet) {
+
+		// 将频繁项集 中的频繁项提取出来，生成一个集合
+		// HashSet<HashSet<String>>，如：{{1,2,3}，{1,2,5}}遍历这个集合中的每一项,对于其中的每一项频繁项，做如下操作.
+
+		/*
+		 * 1、计算数据中同时有 该频繁项的数据数目，可以直接从最初的参数 itemSet中读取。每个频繁项只需要读取一次即可。作为分子。
+		 * 2、得出该频繁项的所有非空子集
+		 * ，结构也是HashSet<HashSet<String>>，如：{{1,2}，{1,5}，{2}。。。。。}。
+		 * 3、遍历每一个非空子集，做如下操作： 1、计算该非空子集在数据中的出现次数。做为分母。做一次除法，为置信度值。
+		 * 2、用一个变量存放该非空子集对于这条频繁项的补集。 if 置信度值大于其阀值，进行如下操作： 1、将该非空子集 和 其对应的补集，存入
+		 * Map中，Map结构是HashMap<HashSet<String>,HashSet<String>>
+		 * 2、将上一步的Map存入另一个Map中
+		 * ，Map结构是HashMap<HashMap<HashSet<String>,HashSet<String>>,Double>
+		 */
+		// 每一条频繁项循环一次会产生这样一个Map
+		// 结构是HashMap<HashMap<HashSet<String>,HashSet<String>>,Double>
+
+		Set<HashSet<String>> freqItem = itemSet.keySet();
+		HashMap<HashMap<HashSet<String>, HashSet<String>>, Double> result = new HashMap<HashMap<HashSet<String>, HashSet<String>>, Double>();
+
+		for (HashSet<String> aFreqItem : freqItem) {
+			double confid = itemSet.get(aFreqItem);
+
+			// 得到了每一条频繁项的非空子集，用来遍历计算。
+			HashSet<HashSet<String>> freqItemSubset = new HashSet<HashSet<String>>();
+			getSubset(aFreqItem,freqItemSubset);	
+			
+			
+			
+			
+			for (HashSet<String> aFreqItemSubset : freqItemSubset) {
+				// 这里得到的是每一个子集在数据中出现的次数。
+				int num = numOfSubset(data, aFreqItemSubset);
+				confid /= (num * 1.0);
+
+				if (confid > min_confid) {
+					// 产生了补集
+					HashSet<String> subsetCompl = getComplement(aFreqItem,
+							aFreqItemSubset);
+					HashMap<HashSet<String>, HashSet<String>> assRule = new HashMap<HashSet<String>, HashSet<String>>();
+					assRule.put(aFreqItemSubset, subsetCompl);
+					result.put(assRule, confid);
+				}
+
+			}
+
+		}
+		printAssRules(result);
+
+	}
+
+	/**
+	 * 得到每一条频繁项的非空子集.
+	 * 循环策略：判断当前元素数目，当期为1时，停止递归
+	 * 每次找到其少于一个的子集，如{1,2,3}先找到子集{{1,2}，{2,3}，{1,3}}，对于这样的每一个子集，再查找其少于一个的子集。
+	 * 
+	 * @param item 对应的频繁项，如{1,2,3}
+	 * @return 其子集结构，如{{1,2}，{1,5}，{2}。。。。。}
+	 */
+	private static HashSet<HashSet<String>> getNoviSubset(
+			HashSet<String> item) {
+		//result 用来存放最终的子集。
+		HashSet<HashSet<String>> result = new HashSet<HashSet<String>>();
+		getSubset(item,result);		
+		return result;
+	}
+
+
+
+	private static void getSubset(HashSet<String> item,
+			HashSet<HashSet<String>> result) {
+		
+		//结束条件
+		if(item.size() <= 1){
+			return ;
+		}
+		
+		
 	}
 
 	/**
@@ -152,6 +235,7 @@ public class Main {
 				HashSet<String> subset = new HashSet<String>();
 				subset.addAll(item);
 				subset.remove(s);
+				
 				if (!keySet.contains(subset)) {
 					flag = true;
 				}
@@ -225,7 +309,6 @@ public class Main {
 			System.out.println(me.getKey() + "---" + me.getValue());
 		}
 	}
-	
 
 	/**
 	 * 将不满足最小支持度的项都删除。
