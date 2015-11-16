@@ -44,7 +44,6 @@ public class Main {
 			// 这个操作的结果是每次都产生了C，做了两件事情，连接和剪枝.
 			HashSet<HashSet<String>> c = aproiriGen(itemSet);
 
-			// 这个操作是产生了最终的新一代 L.
 			itemSet = itemSetGen(data, c);
 
 		}
@@ -69,25 +68,6 @@ public class Main {
 	 */
 	private static void associationRulesGen(ArrayList<List<String>> data,
 			HashMap<HashSet<String>, Integer> itemSet) {
-	
-		// 将频繁项集 中的频繁项提取出来，生成一个集合
-		// HashSet<HashSet<String>>，如：{{1,2,3}，{1,2,5}}遍历这个集合中的每一项,对于其中的每一项频繁项，做如下操作.
-
-		/*
-		 * 1、计算数据中同时有 该频繁项的数据数目，可以直接从最初的参数 itemSet中读取。每个频繁项只需要读取一次即可。作为分子。
-		 * 2、得出该频繁项的所有非空子集
-		 * ，结构也是HashSet<HashSet<String>>，如：{{1,2}，{1,5}，{2}。。。。。}。
-		 * 3、遍历每一个非空子集，做如下操作： 1、计算该非空子集在数据中的出现次数。做为分母。做一次除法，为置信度值。
-		 * 2、用一个变量存放该非空子集对于这条频繁项的补集。 if 置信度值大于其阀值，进行如下操作： 1、将该非空子集 和 其对应的补集，存入
-		 * Map中，Map结构是HashMap<HashSet<String>,HashSet<String>>
-		 * 2、将上一步的Map存入另一个Map中
-		 * ，Map结构是HashMap<HashMap<HashSet<String>,HashSet<String>>,Double>
-		 */
-		// 每一条频繁项循环一次会产生这样一个Map
-		// 结构是HashMap<HashMap<HashSet<String>,HashSet<String>>,Double>
-		
-		
-
 		Set<HashSet<String>> freqItem = itemSet.keySet();
 	
 	
@@ -101,11 +81,8 @@ public class Main {
 			getSubset(aFreqItem, freqItemSubset);
 
 			for (HashSet<String> aFreqItemSubset : freqItemSubset) {
-				// 这里得到的是每一个子集在数据中出现的次数。
 				int num = numOfSubset(data, aFreqItemSubset);
-//				System.out.println(aFreqItemSubset+"----------"+num);
 				double confid = confidence /num;
-//				System.out.println("confidence:"+confid);
 
 				if (confid > min_confid) {
 
