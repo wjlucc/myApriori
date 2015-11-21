@@ -39,8 +39,11 @@ public class Main {
 
 		// 这里迭代每次产生新的频繁项集，还有一个问题，新的itemSet size为0时，循环结束，最终的结果保存在 itemSetPre 中。
 		for (int k = 2; itemSet.size() != 0; k++) {
-
+			
 			itemSetPre = itemSet;
+			System.out.println("频繁项集是***************");
+			printHashMap(itemSetPre);
+			
 			// 这个操作的结果是每次都产生了C，做了两件事情，连接和剪枝.
 			HashSet<HashSet<String>> c = aproiriGen(itemSet);
 
@@ -50,10 +53,10 @@ public class Main {
 
 	
 
-		System.out.println("最终产生的频繁项集是*********************");
-		printHashMap(itemSetPre);
+//		System.out.println("最终产生的频繁项集是*********************");
+//		printHashMap(itemSetPre);
 
-		System.out.println("最终产生的关联规则是*********************");
+		System.out.println("最终产生的关联规则是**************");
 		associationRulesGen(data, itemSetPre);
 
 	}
