@@ -1,6 +1,8 @@
 # myApriori
-My fist implemen apriori algorithm
+### My fist implemen apriori algorithm
+========
 数据挖掘中的关联规则挖掘算法
+---------
 输入：
 
 I1 I2 I5
